@@ -127,7 +127,11 @@ export default function DiscountBreakdown() {
       {discountLines.length > 0 ? (
         discountLines.map((discount, index) => (
           <div
-            key={`${discount.effectType}-${discount.label}-${discount.position ?? index}`}
+            // Talon.One splits a quantity>1 line into one effect per unit,
+            // identical except for subPosition — so label+position is not
+            // unique. The array index is, and this list is rebuilt wholesale
+            // on every response, so it is a stable choice here.
+            key={`${discount.effectType}-${discount.label}-${discount.position ?? 'na'}-${index}`}
             style={rowStyle}
           >
             <span style={labelClampStyle} title={discount.ruleName ?? discount.label}>

@@ -305,3 +305,44 @@ describe('hasRejections', () => {
     ).toBe(true);
   });
 });
+
+describe('per-unit split effects (real bundle campaign response)', () => {
+  // Talon.One splits a quantity>1 cart line into one effect per unit. These
+  // three effects are the real response for a cart of 1 PS5 + 2x FC 25 under
+  // "30% discount on a bundle of 2 games and 1 console": the two FC 25 units
+  // are identical except for subPosition.
+  const BUNDLE_EFFECTS = [
+    {
+      campaignId: 15154,
+      ruleName: '30% discount on a bundle of 2 games and 1 console',
+      effectType: 'setDiscountPerItem',
+      props: { name: '30% off per item#2', value: 149.7, position: 2, subPosition: 0 },
+    },
+    {
+      campaignId: 15154,
+      ruleName: '30% discount on a bundle of 2 games and 1 console',
+      effectType: 'setDiscountPerItem',
+      props: { name: '30% off per item#1', value: 14.997, position: 1, subPosition: 0 },
+    },
+    {
+      campaignId: 15154,
+      ruleName: '30% discount on a bundle of 2 games and 1 console',
+      effectType: 'setDiscountPerItem',
+      props: { name: '30% off per item#1', value: 14.997, position: 1, subPosition: 1 },
+    },
+  ];
+
+  it('keeps both units of a split line rather than collapsing them', () => {
+    const parsed = parseEffects(responseWith(BUNDLE_EFFECTS));
+
+    expect(parsed.discountLines).toHaveLength(3);
+    const perUnit = parsed.discountLines.filter((l) => l.label === '30% off per item#1');
+    expect(perUnit).toHaveLength(2);
+  });
+
+  it('sums every unit into the total discount', () => {
+    const parsed = parseEffects(responseWith(BUNDLE_EFFECTS));
+
+    expect(parsed.totalDiscount).toBeCloseTo(149.7 + 14.997 + 14.997, 5);
+  });
+});
