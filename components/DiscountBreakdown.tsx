@@ -13,7 +13,54 @@
 
 import { useState, type CSSProperties } from 'react';
 import { useStore, cartSubtotal, formatCurrency } from '@/lib/state';
-import type { GenericEffect } from '@/lib/types';
+import type { DiscountLine, GenericEffect } from '@/lib/types';
+
+interface GroupedDiscount {
+  key: string;
+  label: string;
+  ruleName?: string;
+  position?: number;
+  /** summed across every unit in the group */
+  value: number;
+  /** how many per-unit effects were folded together */
+  units: number;
+}
+
+/**
+ * Talon.One splits a quantity>1 cart line into one effect per unit, so a 2x
+ * line returns two identical effects differing only by subPosition. Rendering
+ * them as separate rows reads as a duplication bug on a screen-share, so
+ * identical labels are folded into a single row carrying a unit count.
+ *
+ * Only presentation: the summed values still equal `parsed.totalDiscount`,
+ * and the raw per-unit effects remain visible in the API inspector.
+ */
+function groupDiscountLines(lines: DiscountLine[]): GroupedDiscount[] {
+  const groups: GroupedDiscount[] = [];
+  const byKey = new Map<string, GroupedDiscount>();
+
+  for (const line of lines) {
+    const key = `${line.effectType}-${line.label}-${line.position ?? 'na'}`;
+    const existing = byKey.get(key);
+    if (existing) {
+      existing.value += line.value;
+      existing.units += 1;
+      continue;
+    }
+    const group: GroupedDiscount = {
+      key,
+      label: line.label,
+      value: line.value,
+      units: 1,
+      ...(line.ruleName === undefined ? {} : { ruleName: line.ruleName }),
+      ...(line.position === undefined ? {} : { position: line.position }),
+    };
+    byKey.set(key, group);
+    groups.push(group);
+  }
+
+  return groups;
+}
 
 const rowStyle: CSSProperties = {
   display: 'flex',
@@ -114,7 +161,7 @@ export default function DiscountBreakdown() {
   // Clamped: a discount larger than the cart must not render a negative total.
   const total = Math.max(0, subtotal - totalDiscount + shipping);
 
-  const discountLines = parsed?.discountLines ?? [];
+  const groupedDiscounts = groupDiscountLines(parsed?.discountLines ?? []);
   const otherEffects = parsed?.otherEffects ?? [];
 
   return (
@@ -124,16 +171,9 @@ export default function DiscountBreakdown() {
         <span style={amountStyle}>{formatCurrency(subtotal)}</span>
       </div>
 
-      {discountLines.length > 0 ? (
-        discountLines.map((discount, index) => (
-          <div
-            // Talon.One splits a quantity>1 line into one effect per unit,
-            // identical except for subPosition — so label+position is not
-            // unique. The array index is, and this list is rebuilt wholesale
-            // on every response, so it is a stable choice here.
-            key={`${discount.effectType}-${discount.label}-${discount.position ?? 'na'}-${index}`}
-            style={rowStyle}
-          >
+      {groupedDiscounts.length > 0 ? (
+        groupedDiscounts.map((discount) => (
+          <div key={discount.key} style={rowStyle}>
             <span style={labelClampStyle} title={discount.ruleName ?? discount.label}>
               {discount.label}
               {typeof discount.position === 'number' ? (
@@ -141,6 +181,9 @@ export default function DiscountBreakdown() {
                   {' '}
                   · item {discount.position + 1}
                 </span>
+              ) : null}
+              {discount.units > 1 ? (
+                <span className="subtle" style={{ fontSize: 11 }}> ×{discount.units}</span>
               ) : null}
             </span>
             <span style={{ ...amountStyle, color: 'var(--success)', fontWeight: 600 }}>
