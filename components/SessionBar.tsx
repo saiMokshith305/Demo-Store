@@ -2,6 +2,14 @@
 
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useStore } from '@/lib/state';
+import type { SessionState } from '@/lib/types';
+
+/** `partially_returned` is derived by Talon.One from returns, so it is not offered. */
+const SESSION_STATES: { value: SessionState; hint: string }[] = [
+  { value: 'open', hint: 'Cart is live and evaluated for promotions' },
+  { value: 'closed', hint: 'Order placed — closing the session commits the discounts' },
+  { value: 'cancelled', hint: 'Session voided — releases any committed effects' },
+];
 
 /**
  * Fixed-height top bar: brand, read-only session id (+ copy), editable
@@ -9,7 +17,14 @@ import { useStore } from '@/lib/state';
  */
 export default function SessionBar() {
   const { state, dispatch } = useStore();
-  const { sessionId, profileId, shippingCost, dryRun, evaluableCampaignIds } = state.session;
+  const {
+    sessionId,
+    profileId,
+    shippingCost,
+    dryRun,
+    evaluableCampaignIds,
+    state: sessionState,
+  } = state.session;
 
   const [copied, setCopied] = useState(false);
   const [shippingText, setShippingText] = useState<string>(
@@ -136,6 +151,26 @@ export default function SessionBar() {
           onChange={(e) => dispatch({ type: 'SET_PROFILE_ID', profileId: e.target.value })}
           placeholder="demo-customer-1"
         />
+      </div>
+
+      <div style={{ ...fieldStyle, flexShrink: 0 }}>
+        <span className="label" style={{ marginBottom: 2 }}>
+          Session state
+        </span>
+        <div className="segmented" role="group" aria-label="Session state">
+          {SESSION_STATES.map(({ value, hint }) => (
+            <button
+              key={value}
+              type="button"
+              className="segmented-option"
+              aria-pressed={sessionState === value}
+              title={hint}
+              onClick={() => dispatch({ type: 'SET_SESSION_STATE', state: value })}
+            >
+              {value}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div style={{ ...fieldStyle, width: 110, flexShrink: 0 }}>

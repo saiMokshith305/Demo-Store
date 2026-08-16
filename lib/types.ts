@@ -5,6 +5,13 @@
 
 export type Category = 'games' | 'console' | 'cables' | 'accessories';
 
+/**
+ * Session states an integration can set on updateCustomerSession.
+ * `partially_returned` is derived by Talon.One from returns, so it is not
+ * offered here.
+ */
+export type SessionState = 'open' | 'closed' | 'cancelled';
+
 /** A cost entry as Talon.One expects it: { shipping: { price: 9.99 } } */
 export type AdditionalCosts = Record<string, { price: number }>;
 
@@ -38,6 +45,8 @@ export interface SessionConfig {
   profileId: string;
   /** single applied coupon, or null */
   couponCode: string | null;
+  /** session lifecycle state sent on every update */
+  state: SessionState;
   /** session-level additionalCosts.shipping.price */
   shippingCost: number;
   dryRun: boolean;
@@ -65,7 +74,7 @@ export interface TalonCartItem {
 export interface TalonCustomerSession {
   profileId: string;
   evaluableCampaignIds?: number[];
-  state: 'open';
+  state: SessionState;
   couponCodes?: string[];
   cartItems: TalonCartItem[];
   additionalCosts?: AdditionalCosts;

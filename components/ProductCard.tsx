@@ -207,10 +207,11 @@ export default function ProductCard({ product, editing, onEditingChange }: Produ
   const cardStyle: CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
-    padding: 14,
+    padding: 16,
     height: '100%',
     minWidth: 0,
-    transition: 'box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
+    transition:
+      'box-shadow 0.18s var(--ease), border-color 0.18s var(--ease), transform 0.18s var(--ease)',
   };
 
   // ------------------------------------------------------------------ EDIT --
@@ -366,9 +367,9 @@ export default function ProductCard({ product, editing, onEditingChange }: Produ
       style={{
         ...cardStyle,
         gap: 6,
-        boxShadow: hover ? 'var(--shadow-md)' : undefined,
+        boxShadow: hover ? 'var(--shadow-pop)' : undefined,
         borderColor: hover ? 'var(--border-strong)' : undefined,
-        transform: hover ? 'translateY(-1px)' : undefined,
+        transform: hover ? 'translateY(-2px)' : undefined,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
@@ -435,7 +436,7 @@ export default function ProductCard({ product, editing, onEditingChange }: Produ
           gap: 8,
         }}
       >
-        <span style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.01em' }}>
+        <span style={{ fontSize: 19, fontWeight: 700, letterSpacing: '-0.02em' }}>
           {formatCurrency(product.price)}
         </span>
       </div>

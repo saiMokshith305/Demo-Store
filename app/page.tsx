@@ -33,9 +33,9 @@ function DemoApp() {
           flex: 1,
           minHeight: 0,
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.4fr) minmax(360px, 1fr)',
-          gap: 16,
-          padding: 16,
+          gridTemplateColumns: 'minmax(0, 1.45fr) minmax(380px, 1fr)',
+          gap: 20,
+          padding: '20px 22px',
         }}
       >
         <CatalogPanel />

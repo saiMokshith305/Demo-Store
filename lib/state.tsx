@@ -17,6 +17,7 @@ import type {
   ParsedEffects,
   Product,
   SessionConfig,
+  SessionState,
   Toast,
 } from '@/lib/types';
 
@@ -58,6 +59,7 @@ export const initialState: AppState = {
     sessionId: '',
     profileId: 'demo-customer-1',
     couponCode: null,
+    state: 'open',
     shippingCost: 0,
     dryRun: false,
     evaluableCampaignIds: [],
@@ -84,6 +86,7 @@ export type Action =
   | { type: 'REMOVE_PRODUCT'; id: string }
   | { type: 'SET_COUPON'; code: string | null }
   | { type: 'SET_PROFILE_ID'; profileId: string }
+  | { type: 'SET_SESSION_STATE'; state: SessionState }
   | { type: 'SET_SHIPPING_COST'; shippingCost: number }
   | { type: 'SET_DRY_RUN'; dryRun: boolean }
   | { type: 'SET_EVALUABLE_CAMPAIGN_IDS'; ids: number[] }
@@ -147,6 +150,9 @@ export function reducer(state: AppState, action: Action): AppState {
 
     case 'SET_PROFILE_ID':
       return { ...state, session: { ...state.session, profileId: action.profileId } };
+
+    case 'SET_SESSION_STATE':
+      return { ...state, session: { ...state.session, state: action.state } };
 
     case 'SET_SHIPPING_COST':
       return { ...state, session: { ...state.session, shippingCost: action.shippingCost } };

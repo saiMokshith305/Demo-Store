@@ -22,6 +22,7 @@ function makeSession(overrides: Partial<SessionConfig> = {}): SessionConfig {
     sessionId: 'session-abc',
     profileId: 'demo-customer-1',
     couponCode: null,
+    state: 'open',
     shippingCost: 0,
     dryRun: false,
     evaluableCampaignIds: [],
@@ -36,7 +37,7 @@ describe('buildSessionPayload', () => {
       expect(payload.customerSession.profileId).toBe('shopper-42');
     });
 
-    it("always sets state to 'open'", () => {
+    it('sends the session state (open by default)', () => {
       const payload = buildSessionPayload([], makeSession());
       expect(payload.customerSession.state).toBe('open');
     });
@@ -274,5 +275,20 @@ describe('buildSessionPayload', () => {
         responseContent: ['customerSession', 'customerProfile'],
       });
     });
+  });
+});
+
+describe('session state', () => {
+  it('defaults to open', () => {
+    expect(buildSessionPayload([], makeSession()).customerSession.state).toBe('open');
+  });
+
+  it('passes through closed and cancelled rather than forcing open', () => {
+    expect(buildSessionPayload([], makeSession({ state: 'closed' })).customerSession.state).toBe(
+      'closed',
+    );
+    expect(buildSessionPayload([], makeSession({ state: 'cancelled' })).customerSession.state).toBe(
+      'cancelled',
+    );
   });
 });

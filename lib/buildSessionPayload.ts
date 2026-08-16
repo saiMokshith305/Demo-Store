@@ -59,7 +59,7 @@ export function buildSessionPayload(
 ): TalonSessionPayload {
   const customerSession: TalonCustomerSession = {
     profileId: session.profileId,
-    state: 'open',
+    state: session.state,
     cartItems: cart.map(buildCartItem),
     attributes: { ShippingCity: SHIPPING_CITY },
   };
