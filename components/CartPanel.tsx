@@ -18,7 +18,11 @@ import DiscountBreakdown from './DiscountBreakdown';
 const panelStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  height: '100%',
+  // Hug the content so the totals sit directly under the last item, but never
+  // grow past the viewport — at which point the item list scrolls instead and
+  // the totals stay pinned to the bottom of the panel.
+  alignSelf: 'start',
+  maxHeight: '100%',
   minHeight: 0,
   overflow: 'hidden',
 };
@@ -40,8 +44,9 @@ const footerStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 14,
-  borderBottomLeftRadius: 'var(--r-md)',
-  borderBottomRightRadius: 'var(--r-md)',
+  // matches the .card radius so the footer fill does not overshoot the corners
+  borderBottomLeftRadius: 'var(--r-lg)',
+  borderBottomRightRadius: 'var(--r-lg)',
 };
 
 function CartIcon() {
@@ -109,7 +114,9 @@ export default function CartPanel() {
         </button>
       </header>
 
-      <div className="scroll-y" style={{ flex: 1, minHeight: 0 }}>
+      {/* `0 1 auto`: take only the height the items need, shrink and scroll
+          once the panel hits its max height. */}
+      <div className="scroll-y" style={{ flex: '0 1 auto', minHeight: 0 }}>
         {isEmpty ? (
           <div
             style={{
