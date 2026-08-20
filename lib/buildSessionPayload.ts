@@ -70,10 +70,15 @@ export function buildSessionPayload(
   }
 
   // A blank or whitespace-only code is "no coupon", never `[""]` or `[]`.
+  // couponCodes is ALWAYS sent, including as an empty array.
+  //
+  // Talon.One treats an omitted couponCodes as "leave the session's existing
+  // coupons alone", and an explicit [] as "discard them". Omitting it when the
+  // user removes a coupon would therefore keep the coupon applied server-side
+  // and the discount would survive removal. Sending the authoritative list on
+  // every request keeps the session in step with the UI.
   const trimmedCoupon = session.couponCode?.trim() ?? '';
-  if (trimmedCoupon.length > 0) {
-    customerSession.couponCodes = [trimmedCoupon];
-  }
+  customerSession.couponCodes = trimmedCoupon.length > 0 ? [trimmedCoupon] : [];
 
   if (session.shippingCost > 0) {
     customerSession.additionalCosts = { shipping: { price: session.shippingCost } };

@@ -44,6 +44,8 @@ Every edit triggers a debounced session sync, so totals and discounts update liv
 
 **Coupon rejections return HTTP 200.** A rejected coupon is not an HTTP error; it arrives as a `rejectCoupon` effect inside a successful response. The app checks for this on every response and raises a banner with the `rejectionReason`, so a rejected coupon never looks like a silently broken campaign.
 
+**Removing a coupon requires sending `couponCodes: []`.** Omitting the field tells Talon.One to keep whatever coupons the session already has — so an integration that omits it on removal will find the discount stubbornly still applied. This app always sends the authoritative list.
+
 ## Editing model
 
 The catalog and the cart are independent on purpose:
@@ -71,7 +73,7 @@ SKUs and categories are guesses at what the campaigns match on. Every field is e
   "customerSession": {
     "profileId": "demo-customer-1",
     "state": "open",
-    "couponCodes": ["SAVE10"],        // omitted when no coupon applied
+    "couponCodes": ["SAVE10"],        // always sent; [] when no coupon applied
     "evaluableCampaignIds": [42],     // only when dry run is on
     "cartItems": [ /* name, sku, quantity, price, category, dimensions */ ],
     "additionalCosts": { "shipping": { "price": 9.99 } },  // omitted when 0

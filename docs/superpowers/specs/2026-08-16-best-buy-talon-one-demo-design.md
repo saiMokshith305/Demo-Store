@@ -128,7 +128,7 @@ Authorization: ApiKey-v1 {apiKey}
 
 Payload construction rules, implemented in `lib/buildSessionPayload.ts`:
 
-- `couponCodes` is omitted entirely when no coupon is applied (never sent as `[]`)
+- `couponCodes` is **always** sent: `[code]` when applied, `[]` when not. Talon.One reads an omitted `couponCodes` as "keep the session's existing coupons" and an explicit `[]` as "discard them", so omitting it on removal would leave the coupon applied server-side and the discount would survive being removed in the UI.
 - `evaluableCampaignIds` is included only when `dryRun` is true, and the `?dry=true` query parameter is set in the same condition
 - Optional item dimensions (`weight`, `height`, `width`, `length`) and `additionalCosts` are omitted when unset rather than sent as `0` or `{}`
 - `attributes.ShippingCity` uses a hardcoded constant (`Minneapolis`) defined in `lib/constants.ts`

@@ -144,19 +144,23 @@ describe('buildSessionPayload', () => {
   });
 
   describe('couponCodes', () => {
-    it('omits couponCodes when couponCode is null', () => {
+    // Talon.One reads an omitted couponCodes as "keep the existing coupons" and
+    // an explicit [] as "discard them", so removing a coupon must send [].
+    // Omitting it would leave the coupon applied server-side.
+    it('sends an empty array when couponCode is null, so removal clears it', () => {
       const payload = buildSessionPayload([], makeSession({ couponCode: null }));
-      expect('couponCodes' in payload.customerSession).toBe(false);
+      expect('couponCodes' in payload.customerSession).toBe(true);
+      expect(payload.customerSession.couponCodes).toEqual([]);
     });
 
-    it('omits couponCodes when couponCode is an empty string', () => {
+    it('sends an empty array when couponCode is an empty string', () => {
       const payload = buildSessionPayload([], makeSession({ couponCode: '' }));
-      expect('couponCodes' in payload.customerSession).toBe(false);
+      expect(payload.customerSession.couponCodes).toEqual([]);
     });
 
-    it('omits couponCodes when couponCode is whitespace only', () => {
+    it('sends an empty array when couponCode is whitespace only', () => {
       const payload = buildSessionPayload([], makeSession({ couponCode: '   \t ' }));
-      expect('couponCodes' in payload.customerSession).toBe(false);
+      expect(payload.customerSession.couponCodes).toEqual([]);
     });
 
     it('sends a single-element array when a coupon is applied', () => {
@@ -261,12 +265,13 @@ describe('buildSessionPayload', () => {
       const payload = buildSessionPayload([makeLine()], makeSession());
 
       expect(Object.keys(payload.customerSession).sort()).toEqual(
-        ['attributes', 'cartItems', 'profileId', 'state'].sort(),
+        ['attributes', 'cartItems', 'couponCodes', 'profileId', 'state'].sort(),
       );
       expect(JSON.parse(JSON.stringify(payload))).toEqual({
         customerSession: {
           profileId: 'demo-customer-1',
           state: 'open',
+          couponCodes: [],
           cartItems: [
             { name: 'The Legend of Zelda', sku: 'GAME-ZELDA', quantity: 1, price: 59.99, category: 'games' },
           ],
